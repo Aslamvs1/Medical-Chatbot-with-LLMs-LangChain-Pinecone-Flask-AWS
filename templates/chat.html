@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MediBot AI</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Poppins',sans-serif;}
+body{height:100vh;background:linear-gradient(135deg,#0f172a,#0ea5e9);display:flex;}
+.chat-wrapper{width:100%;display:flex;justify-content:center;align-items:center;padding:20px;}
+.chat-container{width:100%;max-width:1000px;height:95vh;background:rgba(255,255,255,0.12);backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,0.2);border-radius:30px;overflow:hidden;display:flex;flex-direction:column;}
+.header{padding:20px 30px;color:white;display:flex;align-items:center;gap:15px;border-bottom:1px solid rgba(255,255,255,0.1);}
+.logo{width:55px;height:55px;border-radius:50%;background:white;display:flex;align-items:center;justify-content:center;font-size:28px;}
+.title h2{font-size:24px;}.title p{opacity:.8;font-size:14px;}
+.chat-box{flex:1;overflow-y:auto;padding:30px;}
+.welcome{text-align:center;color:white;margin-top:40px;}
+.welcome h1{font-size:42px;margin-bottom:10px;}
+.welcome p{opacity:.85;margin-bottom:30px;}
+.suggestions{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;}
+.chip{padding:12px 20px;border-radius:30px;background:rgba(255,255,255,.15);color:white;cursor:pointer;transition:.3s;}
+.chip:hover{background:rgba(255,255,255,.25);}
+.message{max-width:75%;padding:15px 18px;border-radius:20px;margin-bottom:15px;line-height:1.7;}
+.bot{background:white;color:#111827;}
+.user{margin-left:auto;background:#06b6d4;color:white;}
+.input-area{padding:20px;background:rgba(255,255,255,.08);}
+.input-box{display:flex;background:white;border-radius:50px;overflow:hidden;}
+.input-box input{flex:1;border:none;outline:none;padding:18px 25px;font-size:16px;}
+.input-box button{border:none;padding:0 30px;background:#0284c7;color:white;font-size:16px;cursor:pointer;}
+.input-box button:hover{background:#0369a1;}
+@media(max-width:768px){.chat-container{height:100vh;border-radius:0;}.welcome h1{font-size:30px;}.message{max-width:90%;}}
+</style>
+</head>
+<body>
+<div class="chat-wrapper">
+<div class="chat-container">
+<div class="header">
+    <div class="logo">🏥</div>
+    <div class="title">
+        <h2>MediBot AI</h2>
+        <p>Healthcare Assistant Powered by AI</p>
+    </div>
+</div>
+<div class="chat-box" id="chatBox">
+    <div class="welcome" id="welcome">
+        <h1>How can I help you today?</h1>
+        <p>Ask any health-related question and get instant assistance.</p>
+        <div class="suggestions">
+            <div class="chip" onclick="sendMessage('What is Acne?')">What is Acne?</div>
+            <div class="chip" onclick="sendMessage('Symptoms of Diabetes')">Symptoms of Diabetes</div>
+            <div class="chip" onclick="sendMessage('Causes of Fever')">Causes of Fever</div>
+            <div class="chip" onclick="sendMessage('Healthy Diet Tips')">Healthy Diet Tips</div>
+        </div>
+    </div>
+</div>
+<div class="input-area">
+    <div class="input-box">
+        <input type="text" placeholder="Ask your medical question..." id="userInput" onkeypress="if(event.key==='Enter') sendMessage()">
+        <button onclick="sendMessage()">Send</button>
+    </div>
+</div>
+</div>
+</div>
+
+<script>
+function sendMessage(text) {
+    const input = document.getElementById("userInput");
+    const msg = text || input.value.trim();
+    if (!msg) return;
+
+    document.getElementById("welcome").style.display = "none";
+
+    const chatBox = document.getElementById("chatBox");
+    chatBox.innerHTML += '<div class="message user">' + msg + '</div>';
+    chatBox.innerHTML += '<div class="message bot" id="typing">Typing...</div>';
+    input.value = "";
+    chatBox.scrollTop = chatBox.scrollHeight;
+
+    fetch("/get", {
+        method: "POST",
+        headers: {"Content-Type": "application/x-www-form-urlencoded"},
+        body: "msg=" + encodeURIComponent(msg)
+    })
+    .then(function(res) { return res.text(); })
+    .then(function(data) {
+        document.getElementById("typing").remove();
+        chatBox.innerHTML += '<div class="message bot">' + data + '</div>';
+        chatBox.scrollTop = chatBox.scrollHeight;
+    })
+    .catch(function() {
+        document.getElementById("typing").innerText = "Error getting response. Please try again.";
+    });
+}
+</script>
+</body>
+</html>
